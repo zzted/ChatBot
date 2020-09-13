@@ -1,9 +1,12 @@
-import numpy as np
+from urlextract import URLExtract
+from xpinyin import Pinyin
+import unicodedata
 import jieba
-import re
 import os
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
+import re
+
+p = Pinyin()
+extractor = URLExtract()
 
 
 def tokenize(text):
@@ -11,54 +14,83 @@ def tokenize(text):
     return words
 
 
+def skip_section(text, i):
+    i += 1
+    while "-------" not in text[i]:
+        i += 1
+    i += 1
+    return i
+
+
+def text_filter(text):
+    cur = unicodedata.normalize('NFKC', text)
+    if '-------' in cur:
+        cur = ""
+    #     if("[" in cur and "]" in cur):
+    #         cur = cur.split("[")[0] + cur.split("[")[1].split("]")[1]
+    urls = extractor.find_urls(cur)
+    if len(urls) > 0:
+        for link in urls:
+            cur = cur.replace(link, "[链接]")
+    nums = re.findall(r'-?\d+\.?\d*', cur)
+    nums = sorted(nums, key=len, reverse=True)
+    if len(nums) > 0:
+        for num in nums:
+            cur = cur.replace(num, "[数字]")
+    if "): " in cur:
+        cur = cur.split("):  ")[1]
+    if "对方正在使用" in cur and "收发消息" in cur:
+        cur = cur.split("对方正在使用")[0] + cur.split("对方正在使用")[1].split("收发消息")[1]
+
+    cur = re.sub(r'''[][【】“”‘’"'、,.。:;@#?!&$/()%~`-―〈〉「」・@+_*=《》^…￥-]+\ *''',
+                 " ", cur, flags=re.VERBOSE)
+    return cur
+
+
 class Preprocessor:
 
     def __init__(self):
-        self.client_questions = None
-        self.stop_words = ["。", "，", "？"]
-        self.column_index = []
-        self.column_names = []
-        self.word_matrix = None
+        self.data = []
+        self.stopWords = [' ']
         self.cluster = 50
         self.classes = []
 
-    def readfile(self):
+    def transform(self):
         f = open('chatbot.txt', 'r')
         file_content = f.read()
-        content_split = file_content.splitlines()
-        self.client_questions = [x.split("):  ")[1] for x in content_split
-                                 if ("佩爱旗舰店" not in x) and ("):" in x)]
-        for i in range(len(self.client_questions)):
-            if "[" in self.client_questions[i] and "]" in self.client_questions[i]:
-                self.client_questions[i] = self.client_questions[i].split("[")[0] + \
-                                           self.client_questions[i].split("[")[1].split("]")[1]
+        text = file_content.splitlines()
 
-        self.client_questions = [x for x in self.client_questions if ("http" not in x) and len(x) != 0]
-
-    def tf_idf(self):
-        vectorizer = TfidfVectorizer(tokenizer=tokenize,
-                                     stop_words=self.stop_words)
-        matrix = vectorizer.fit_transform(self.client_questions)
-
-        original_features = vectorizer.get_feature_names()
-        
-        for i in range(len(original_features)):
-            if len(re.findall(r'[\u4e00-\u9fff]+', original_features[i])) != 0:
-                self.column_index.append(i)
-                self.column_names.append(original_features[i])
-
-        self.word_matrix = np.array(matrix.toarray()).T[self.column_index]
-
-    def clustering(self):
-        print("Begin clustering")
-        k_means = np.array(KMeans(n_clusters=self.cluster).fit(self.word_matrix.T).labels_)
-        print("Finished clustering")
-        for i in range(self.cluster):
-            ind = np.where(k_means == i)[0]
-            names = []
-            for j in ind:
-                names.append(self.client_questions[j])
-            self.classes.append(names)
+        i = 0
+        while i < len(text):
+            Q = ""
+            A = ""
+            if "(2017" in text[i] and "佩爱旗舰店" not in text[i]:
+                while i < len(text):
+                    Q += text_filter(text[i])
+                    i += 1
+                    if i < len(text) and "-------" in text[i] and "佩爱旗舰店" in text[i]:
+                        i = skip_section(text, i)
+                        continue
+                    if i < len(text) and "(2017" in text[i] and "佩爱旗舰店" in text[i]:
+                        break
+            if i < len(text) and "(2017" in text[i] and "佩爱旗舰店" in text[i]:
+                while i < len(text):
+                    A += text_filter(text[i])
+                    i += 1
+                    if i < len(text) and "-------" in text[i] and "佩爱旗舰店" in text[i]:
+                        i = skip_section(text, i)
+                        continue
+                    if i < len(text) and "(2017" in text[i] and "佩爱旗舰店" not in text[i]:
+                        Q = re.sub(r"\s+", " ", Q)
+                        Q_p = p.get_pinyin(Q, ' ')
+                        Q_p = re.sub(r"\s+", " ", Q_p)
+                        A = re.sub(r"\s+", " ", A)
+                        A_p = p.get_pinyin(A, ' ')
+                        A_p = re.sub(r"\s+", " ", A_p)
+                        self.data.append([Q, A, Q_p, A_p])
+                        break
+            else:
+                i += 1
 
     def write_result(self):
         if not os.path.exists('./clusters'):
