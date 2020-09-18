@@ -63,11 +63,11 @@ class Conversation:
                         continue
                     if line < self.text_length and self.is_wanted(text[line], self.include_question, self.exclude_question):
                         Q = re.sub(r"\s+", " ", Q)
-                        Q_p = p.get_pinyin(Q, ' ')
-                        Q_p = re.sub(r"\s+", " ", Q_p)
+                        Q_p = p.get_pinyin(Q, '')
+                        Q_p = re.sub(r"\s+", "", Q_p)
                         A = re.sub(r"\s+", " ", A)
-                        A_p = p.get_pinyin(A, ' ')
-                        A_p = re.sub(r"\s+", " ", A_p)
+                        A_p = p.get_pinyin(A, '')
+                        A_p = re.sub(r"\s+", "", A_p)
                         self.data.append([Q, A, Q_p, A_p])
                         break
             else:
