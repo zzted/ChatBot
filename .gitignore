@@ -1,6 +1,11 @@
 __pycache__/
-
 test.txt
-
 *.ipynb
-
+*.egg-info
+.idea
+__pycache__
+venv
+dist
+.pytest_cache
+.mypy_cache
+build
