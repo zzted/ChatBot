@@ -56,12 +56,13 @@ class TextFilter:
         cur = unicodedata.normalize('NFKC', text)
         if not self.keyword_skip_line != "" and self.keyword_skip_line in cur:
             return ""
-        if len(self.keyword_skip_word) > 0:
-            cur = self.skip_word(cur, self.keyword_skip_word)
         if self._remove_link:
             cur = self.remove_link(cur)
         if self._remove_number:
             cur = self.remove_numbers(cur)
+        if len(self.keyword_skip_word) > 0:
+            cur = self.skip_word(cur, self.keyword_skip_word)
+        cur = re.sub(r'\[.*?\]', " ", cur)
         if self.keyword_skip_prefix != "" and self.keyword_skip_prefix in cur:
             cur = cur.split(self.keyword_skip_prefix)[1]
         if self._remove_punctuation:

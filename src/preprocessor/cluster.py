@@ -55,14 +55,9 @@ class Cluster:
         self.k_means = np.array(KMeans(n_clusters=self.cluster_number).fit(features).labels_)
         print("Finished Clustering")
 
-    def write_result(self, res_type: str):
+    def write_result(self):
         classes = []
-        if res_type == "questions":
-            to_write = [x[0] for x in self.data]
-        elif res_type == "answers":
-            to_write = [x[1] for x in self.data]
-        else:
-            raise RuntimeError("Result type not supported.")
+        to_write = [x[0] + "\n" + x[1] for x in self.data]
 
         for i in range(self.cluster_number):
             ind = np.where(self.k_means == i)[0]
@@ -72,8 +67,9 @@ class Cluster:
             classes.append(names)
 
         for i in range(self.cluster_number):
-            f = open("./res/%s/Class_%d.txt" % (res_type, i), 'w')
+            f = open("./docs/clusters/res.txt", 'a+')
             newClass = map(lambda x: x + '\n', classes[i])
+            f.write("Cluster_%d \n" % i)
             f.writelines(newClass)
             f.close()
         print("Finished writing result data.")

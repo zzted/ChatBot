@@ -49,7 +49,8 @@ class Conversation:
                 while line < self.text_length:
                     Q += self.text_filter.fit_transform(text[line])
                     line += 1
-                    if line < self.text_length and self.is_wanted(text[line], self.include_skip_section, self.exclude_skip_section):
+                    if line < self.text_length and self.is_wanted(text[line], self.include_skip_section,
+                                                                  self.exclude_skip_section):
                         line = self.skip_section(text, line)
                         continue
                     if line < self.text_length and self.is_wanted(text[line], self.include_answer, self.exclude_answer):
@@ -58,15 +59,19 @@ class Conversation:
                 while line < self.text_length:
                     A += self.text_filter.fit_transform(text[line])
                     line += 1
-                    if line < self.text_length and self.is_wanted(text[line], self.include_skip_section, self.exclude_skip_section):
+                    if line < self.text_length and self.is_wanted(text[line], self.include_skip_section,
+                                                                  self.exclude_skip_section):
                         line = self.skip_section(text, line)
                         continue
-                    if line < self.text_length and self.is_wanted(text[line], self.include_question, self.exclude_question):
-                        Q = re.sub(r"\s+", " ", Q)
+                    if line < self.text_length and self.is_wanted(text[line], self.include_question,
+                                                                  self.exclude_question):
+                        Q = re.sub(r"\s+", " ", Q).lstrip().rstrip()
+                        A = re.sub(r"\s+", " ", A).lstrip().rstrip()
+                        if Q == "" or A == "":
+                            break
                         Q_p = p.get_pinyin(Q, '')
-                        Q_p = re.sub(r"\s+", "", Q_p)
-                        A = re.sub(r"\s+", " ", A)
                         A_p = p.get_pinyin(A, '')
+                        Q_p = re.sub(r"\s+", "", Q_p)
                         A_p = re.sub(r"\s+", "", A_p)
                         self.data.append([Q, A, Q_p, A_p])
                         break
