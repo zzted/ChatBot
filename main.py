@@ -1,4 +1,4 @@
-from src.preprocessor import preprocess, textfilter, content_extract, file_reader, cluster
+from src.preprocessor import preprocess, textfilter, file_reader, cluster
 import time
 
 
@@ -19,7 +19,7 @@ def main():
     end = time.time()
     print("Reading file took %f sec" % (end - start))
 
-    cluster_data = cluster.Cluster([" ", "亲", "嗯"], [], 50)
+    cluster_data = cluster.Cluster([" ", "亲", "嗯", "好的"], [], 50)
 
     start = time.time()
     conversation.transform(data_file.text)

@@ -57,7 +57,7 @@ class Cluster:
 
     def write_result(self):
         classes = []
-        to_write = [x[0] + "\n" + x[1] for x in self.data]
+        to_write = [x[0] + "@" + x[1] for x in self.data]
 
         for i in range(self.cluster_number):
             ind = np.where(self.k_means == i)[0]
