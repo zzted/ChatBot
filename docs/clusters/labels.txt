@@ -1,0 +1,22 @@
+"""
+Question_labels:
+0: Unknown 
+1: greeting 
+2: size 
+3: material
+4: shipping 
+5: return
+6: stock 
+7: thanks
+8: freeshipping
+9: address
+10: paying
+11: events
+12: discount
+13: cashback
+14: receiving
+15: shippingfee
+16: style
+17: dilivered 
+18: price differences
+"""

@@ -43,7 +43,8 @@ class Cluster:
                     ('selector', content_extract.ContentExtractor(3)),
                     ('Tf-Idf', TfidfVectorizer(stop_words=self.stop_words, ngram_range=(1, 5), analyzer=u'char'))
                 ]))
-            ]
+            ],
+            transformer_weights=dict(questions=1.0, questionsPinYin=1.0, answers=0.8, answerPinyin=0.8)
         )
 
     def fit_transform(self, data):
@@ -68,8 +69,8 @@ class Cluster:
 
         for i in range(self.cluster_number):
             f = open("./docs/clusters/res.txt", 'a+')
-            newClass = map(lambda x: x + '\n', classes[i])
+            new_class = map(lambda x: x + '\n', classes[i])
             f.write("Cluster_%d \n" % i)
-            f.writelines(newClass)
+            f.writelines(new_class)
             f.close()
         print("Finished writing result data.")

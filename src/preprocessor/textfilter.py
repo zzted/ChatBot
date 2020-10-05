@@ -47,7 +47,10 @@ class TextFilter:
             elif type(word) is str:
                 assert len(word) > 0, "Cannot skip empty string."
                 if word in text:
-                    text = text.split(word)[0] + text.split(word)[1].split(word)[1]
+                    segments = text.split(word)
+                    text = ''
+                    for segment in segments:
+                        text += segment
             else:
                 raise Exception('Unsupported skip words.')
         return text
