@@ -19,7 +19,7 @@ def main():
     end = time.time()
     print("Reading file took %f sec" % (end - start))
 
-    cluster_data = cluster.Cluster([" ", "亲", "嗯", "好的"], [], 50)
+    cluster_data = cluster.Cluster([" ", "亲", "嗯", "好的"], [], 100)
 
     start = time.time()
     conversation.transform(data_file.text)
