@@ -20,3 +20,17 @@ Question_labels:
 17: dilivered 
 18: price differences
 """
+
+0: unknown
+1: greeting
+2: stock
+3: material
+4: pay
+5: order
+6: freeshipping
+7: shipping
+8: size
+9: thank
+10: sale
+11: return
+12: receive

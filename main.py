@@ -26,6 +26,11 @@ def main():
     end = time.time()
     print("Content extracting took %f sec" % (end - start))
 
+    # with open("/home/zz/Documents/ChatBot/docs/transformed_text.txt", 'w') as fp:
+    #     for list_item in conversation.data:
+    #         fp.write('%s\n' % list_item[0])
+    #         fp.write('%s\n' % list_item[2])
+
     start = time.time()
     cluster_data.fit_transform(conversation.data)
     end = time.time()

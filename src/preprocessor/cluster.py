@@ -44,7 +44,7 @@ class Cluster:
                     ('Tf-Idf', TfidfVectorizer(stop_words=self.stop_words, ngram_range=(1, 5), analyzer=u'char'))
                 ]))
             ],
-            transformer_weights=dict(questions=1.0, questionsPinYin=1.0, answers=0.8, answerPinyin=0.8)
+            transformer_weights=dict(questions=1.0, questionsPinYin=0.2, answers=0.4, answerPinyin=0.1)
         )
 
     def fit_transform(self, data):
