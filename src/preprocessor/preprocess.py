@@ -1,79 +1,46 @@
-from xpinyin import Pinyin
-import re
-
-p = Pinyin()
+from src.preprocessor import data_clean, text_filter, read_file, feature_extract
+import time
 
 
-class Conversation:
+def main():
+    text_filter = text_filter.TextFilter(skip_word=[["对方正在使用", "收发消息"]],
+                                         skip_line="-------",
+                                         skip_prefix="): ")
 
-    def __init__(self, include_question: list, exclude_question: list,
-                 include_answer: list, exclude_answer: list,
-                 include_skip_section: list, exclude_skip_section: list,
-                 text_filter=None):
+    conversation = data_clean.Conversation(["(2017"], ["佩爱旗舰店"],
+                                           ["(2017", "佩爱旗舰店"], [],
+                                           ["-------", "佩爱旗舰店"], [],
+                                           text_filter)
 
-        self.text_filter = text_filter
-        self.include_question = include_question
-        self.exclude_question = exclude_question
-        self.include_answer = include_answer
-        self.exclude_answer = exclude_answer
-        self.include_skip_section = include_skip_section
-        self.exclude_skip_section = exclude_skip_section
-        self.text_length = None
-        self.data = []
+    data_file = read_file.DataFile()
 
-    @classmethod
-    def skip_section(cls, text, line):
-        line += 1
-        while "-------" not in text[line]:
-            line += 1
-        line += 1
-        return line
+    start = time.time()
+    data_file.read(file_path='../../docs/chatbot.txt')
+    end = time.time()
+    print("Reading file took %f sec" % (end - start))
 
-    @classmethod
-    def is_wanted(cls, text, includes, excludes):
-        for include in includes:
-            if include not in text:
-                return False
-        for exclude in excludes:
-            if exclude in text:
-                return False
-        return True
+    cluster_data = feature_extract.Cluster([" ", "亲", "嗯", "好的"], [], 100)
 
-    def transform(self, text):
-        self.text_length = len(text)
-        line = 0
-        while line < self.text_length:
-            Q = ""
-            A = ""
-            if self.is_wanted(text[line], self.include_question, self.exclude_question):
-                while line < self.text_length:
-                    Q += self.text_filter.fit_transform(text[line])
-                    line += 1
-                    if line < self.text_length and self.is_wanted(text[line], self.include_skip_section,
-                                                                  self.exclude_skip_section):
-                        line = self.skip_section(text, line)
-                        continue
-                    if line < self.text_length and self.is_wanted(text[line], self.include_answer, self.exclude_answer):
-                        break
-            if self.is_wanted(text[line], self.include_answer, self.exclude_answer):
-                while line < self.text_length:
-                    A += self.text_filter.fit_transform(text[line])
-                    line += 1
-                    if line < self.text_length and self.is_wanted(text[line], self.include_skip_section,
-                                                                  self.exclude_skip_section):
-                        line = self.skip_section(text, line)
-                        continue
-                    if line < self.text_length and self.is_wanted(text[line], self.include_question,
-                                                                  self.exclude_question):
-                        Q = re.sub(r"\s+", " ", Q).lstrip().rstrip()
-                        A = re.sub(r"\s+", " ", A).lstrip().rstrip()
-                        if Q == "" or A == "":
-                            break
-                        Q_p = p.get_pinyin(Q, '')
-                        A_p = p.get_pinyin(A, '')
-                        Q_p = re.sub(r"\s+", "", Q_p)
-                        A_p = re.sub(r"\s+", "", A_p)
-                        self.data.append([Q, A, Q_p, A_p])
-                        break
-            else:
-                line += 1
+    start = time.time()
+    conversation.transform(data_file.text)
+    end = time.time()
+    print("Content extracting took %f sec" % (end - start))
+
+    # with open("/home/zz/Documents/ChatBot/docs/transformed_text.txt", 'w') as fp:
+    #     for list_item in conversation.data:
+    #         fp.write('%s\n' % list_item[0])
+    #         fp.write('%s\n' % list_item[2])
+
+    start = time.time()
+    cluster_data.fit_transform(conversation.data)
+    end = time.time()
+    print("Clustering took %f sec" % (end - start))
+
+    start = time.time()
+    cluster_data.write_result()
+    end = time.time()
+    print("Writing results took %f sec" % (end - start))
+
+
+if __name__ == '__main__':
+    main()
